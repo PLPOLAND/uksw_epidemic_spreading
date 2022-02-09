@@ -24,6 +24,7 @@ public class Person {
     private double posX = 0;
     private double posY = 0;
 
+    double speed = 0;
 
     ArrayList<Target> targets = null;
     Target target;
@@ -33,6 +34,10 @@ public class Person {
         this.targets = targets;
         target = targets.get(random.nextInt(targets.size()));
 
+        speed = Constants.SPEED* random.nextDouble();
+        if (speed<0.1) {
+            speed = 0.1;
+        }
         me = this.graph.addNode("P"+nextPersonID++);
         me.addAttribute("person", true);
         
@@ -40,10 +45,10 @@ public class Person {
         if (Constants.SPAWN_ON_TARGETS) {
             
             x = (int)target.getPosX() ;
-            int dx =(random.nextInt(Constants.SIZE_OF_TARGET *2)  ) - Constants.SIZE_OF_TARGET;
+            int dx =(random.nextInt(Constants.SIZE_OF_TARGET ) * 2  ) - Constants.SIZE_OF_TARGET;
             x += dx;
             y = (int)target.getPosY();
-            int dy = (random.nextInt(Constants.SIZE_OF_TARGET * 2) ) - Constants.SIZE_OF_TARGET;
+            int dy = (random.nextInt(Constants.SIZE_OF_TARGET ) * 2) - Constants.SIZE_OF_TARGET;
             y+= dy;
 
 
@@ -61,6 +66,11 @@ public class Person {
         posY = y;
         me.setAttribute("x", x);
         me.setAttribute("y", y);
+
+
+        int randNum = random.nextInt(target.getNeigh().size());
+        this.target = target.getNeigh().get(randNum);
+
 
         int r = random.nextInt(100);
         int g = random.nextInt(255);
@@ -96,8 +106,8 @@ public class Person {
         
         dx /= length;
         dy /= length;
-        dx *= Constants.SPEED;
-        dy *= Constants.SPEED;
+        dx *= speed;
+        dy *= speed;
 
         move(posX + dx,posY +dy);
 
