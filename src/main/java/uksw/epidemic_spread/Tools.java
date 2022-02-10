@@ -79,4 +79,12 @@ public class Tools {
             return true;
         }
     }
+    public static boolean checkPosition(int x, int y, int border) {
+
+        if (x >= Constants.SIZE_OF_SCREAN - border || x <= border || y >= Constants.SIZE_OF_SCREAN - border || y <= border) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

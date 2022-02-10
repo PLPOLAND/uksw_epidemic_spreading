@@ -31,11 +31,10 @@ public class Target {
         x = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
         y = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
 
-        while(!Tools.checkPosition(x, y)){
+        while(!Tools.checkPosition(x, y, Constants.SIZE_OF_TARGET)){
             x = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
             y = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
         }
-        //TODO CHECK BORDER!
         posX = x;
         posY = y;
         target.setAttribute("x", x);

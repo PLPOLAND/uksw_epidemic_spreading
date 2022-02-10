@@ -49,7 +49,7 @@ public class Model {
 
         makeTargets(Constants.NUMBER_OF_TARGETS);
 
-        Tools.hitAKkey("Hit ENTER, to PUT the army", true);
+        // Tools.hitAKkey("Hit ENTER, to PUT the army", true); //TODO uncomment
 
         pipe.pump();
         
@@ -68,7 +68,7 @@ public class Model {
         for (Target target : targets) {
             int connetions = random.nextInt(Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_TARGET);
             if (connetions == 0) {
-                connetions++;
+                connetions+=2;
             }
             if(target.neigh.size()> Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_TARGET){// To don't get to much connections
                 continue;
@@ -76,19 +76,24 @@ public class Model {
 
             ArrayList<Target> tmpTargets = new ArrayList<>(targets);
             for (int i = 0; i < connetions; i++) {
-                Target targetToConnect = tmpTargets.get(random.nextInt(tmpTargets.size()));
-                boolean hasNoMore = false;
-                while (target.hasConnectionTo(targetToConnect)) {
-                    if (tmpTargets.isEmpty()) {
-                        hasNoMore = true;
-                        break;
+                try{
+                    Target targetToConnect = tmpTargets.get(random.nextInt(tmpTargets.size()));
+                    boolean hasNoMore = false;
+                    while (target.hasConnectionTo(targetToConnect)) {
+                        if (tmpTargets.isEmpty()) {
+                            hasNoMore = true;
+                            break;
+                        }
+                        int tmp = random.nextInt(tmpTargets.size());
+                        targetToConnect = tmpTargets.get(tmp);
+                        tmpTargets.remove(tmp);
                     }
-                    int tmp = random.nextInt(tmpTargets.size());
-                    targetToConnect = tmpTargets.get(tmp);
-                    tmpTargets.remove(tmp);
+                    if (!hasNoMore) {
+                        target.connectTo(targetToConnect);
+                    }
                 }
-                if (!hasNoMore) {
-                    target.connectTo(targetToConnect);
+                catch(Exception e){
+                    continue;
                 }
             }
 
