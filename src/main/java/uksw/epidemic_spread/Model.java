@@ -8,11 +8,19 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.ProxyPipe;
 import org.graphstream.ui.view.Viewer;
 
+/**
+ * The class that is responsible for creating the experiment environment
+ */
 public class Model {
+    /** Graph where the environment is shown */
     SingleGraph screen;
-    ArrayList<Person> army = new ArrayList<>();
-    ArrayList<Target> targets = new ArrayList<>();
+    /** Holds army participating in the experiment */
+    ArrayList<Soldier> army = new ArrayList<>();
+    /** Holds districts of the experiment */
+    ArrayList<District> districts = new ArrayList<>();
+
     Random random = new Random(System.currentTimeMillis());
+    /**Used to updete location of districted if moved*/
     ProxyPipe pipe;
     
     Model(){
@@ -47,49 +55,55 @@ public class Model {
         screen.addEdge("RT-RB", corners[1], corners[2], false);
         screen.addEdge("RB-LB", corners[2], corners[3], false);
 
-        makeTargets(Constants.NUMBER_OF_TARGETS);
+        makeDistricts(Constants.NUMBER_OF_DISTRICTS);
 
         // Tools.hitAKkey("Hit ENTER, to PUT the army", true); //TODO uncomment
 
         pipe.pump();
         
-        for (Target target : targets) {
-            target.upgrade();
+        for (District target : districts) {
+            target.update();
 
+        }
+        for (Soldier person : army) {
+            person.update();
         }
         makeTheArmyOfAsgard(Constants.SIZE_OF_ARMY);
 
     }
-
-    public void makeTargets(int targetNum) {
-        for (int i = 0; i < targetNum; i++) {
-            targets.add(new Target(screen));
+    /**
+     * Creating districts and connects them
+     * @param districtsNum numver of distrticts to create
+     */
+    public void makeDistricts(int districtsNum) {
+        for (int i = 0; i < districtsNum; i++) {
+            districts.add(new District(screen));
         }
-        for (Target target : targets) {
-            int connetions = random.nextInt(Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_TARGET);
+        for (District target : districts) {
+            int connetions = random.nextInt(Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_DISTRICT);
             if (connetions == 0) {
                 connetions+=2;
             }
-            if(target.neigh.size()> Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_TARGET){// To don't get to much connections
+            if(target.neigh.size()> Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_DISTRICT){// To don't get to much connections
                 continue;
             }
 
-            ArrayList<Target> tmpTargets = new ArrayList<>(targets);
+            ArrayList<District> tmpDistricts = new ArrayList<>(districts);
             for (int i = 0; i < connetions; i++) {
                 try{
-                    Target targetToConnect = tmpTargets.get(random.nextInt(tmpTargets.size()));
+                    District districtToConnect = tmpDistricts.get(random.nextInt(tmpDistricts.size()));
                     boolean hasNoMore = false;
-                    while (target.hasConnectionTo(targetToConnect)) {
-                        if (tmpTargets.isEmpty()) {
+                    while (target.hasConnectionTo(districtToConnect)) {
+                        if (tmpDistricts.isEmpty()) {
                             hasNoMore = true;
                             break;
                         }
-                        int tmp = random.nextInt(tmpTargets.size());
-                        targetToConnect = tmpTargets.get(tmp);
-                        tmpTargets.remove(tmp);
+                        int tmp = random.nextInt(tmpDistricts.size());
+                        districtToConnect = tmpDistricts.get(tmp);  
+                        tmpDistricts.remove(tmp);
                     }
                     if (!hasNoMore) {
-                        target.connectTo(targetToConnect);
+                        target.connectTo(districtToConnect);
                     }
                 }
                 catch(Exception e){
@@ -100,27 +114,57 @@ public class Model {
         }
 
     }
-
+    /**
+     * Creates the army to test on
+     * @param size how many soldiers
+     */
     void makeTheArmyOfAsgard(int size){
         for (int i = 0; i < size; i++) {
-            army.add(new Person(screen,targets));
+            army.add(new Soldier(screen,districts));
         }
     }
-
+    /**
+     * to make calculations, movment etc.
+     */
     public void tic() {
-        pipe.pump();
-        for (Person person : army) {
+        for (Soldier person : army) {
             person.tic();
         }
-        for (Target target : targets){
-            target.upgrade();
-
-        }
-
+        update();
+        
         //TODO add epidemic spread method!
-
+        
     }
-
+    /**
+     * Updates Disticts location if moved.
+     */
+    public void update(){
+        pipe.pump();
+        for (District target : districts){
+            target.update();
+        }
+        for (Soldier person : army) {
+            person.update();
+        }
+        
+    }
+    
+    /**
+     * Updates Disticts location if moved. And move soldiers to new start location
+     */
+    public void updateBeforeStart(){
+        try {
+            pipe.blockingPump();
+            for (District target : districts) {
+                target.update();
+            }
+            for (Soldier person : army) {
+                person.replaceToNewStartPosition();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

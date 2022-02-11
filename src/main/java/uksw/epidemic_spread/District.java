@@ -8,7 +8,7 @@ import org.graphstream.algorithm.Toolkit;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
-public class Target {
+public class District {
     
     private Node target;
     private SingleGraph graph;
@@ -19,9 +19,9 @@ public class Target {
     private double posX = 0;
     private double posY = 0;
 
-    ArrayList<Target> neigh;
+    ArrayList<District> neigh;
 
-    Target(SingleGraph graph){
+    District(SingleGraph graph){
         neigh = new ArrayList<>();
 
         this.graph = graph;
@@ -31,7 +31,7 @@ public class Target {
         x = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
         y = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
 
-        while(!Tools.checkPosition(x, y, Constants.SIZE_OF_TARGET)){
+        while(!Tools.checkPosition(x, y, Constants.SIZE_OF_DISTRICT)){
             x = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
             y = random.nextInt(Constants.SIZE_OF_SCREAN - 1);
         }
@@ -50,23 +50,23 @@ public class Target {
             b = random.nextInt(255);
         }
 
-        target.setAttribute("ui.style", "stroke-color: rgb("+r+","+ g+","+b+"); fill-color: rgba("+r+","+ g+","+b+",100);size: "+Constants.SIZE_OF_TARGET+
+        target.setAttribute("ui.style", "stroke-color: rgb("+r+","+ g+","+b+"); fill-color: rgba("+r+","+ g+","+b+",100);size: "+Constants.SIZE_OF_DISTRICT+
                                 "; stroke-mode: plain; ");
 
     }
 
-    public void connectTo(Target t){
+    public void connectTo(District t){
         graph.addEdge(target.getId()+"-"+t.getTarget().getId(), target, t.getTarget(), false);
         addToNeigh(t);
         t.addToNeigh(this);
     }
 
-    private void addToNeigh(Target t) {
+    private void addToNeigh(District t) {
         if(!neigh.contains(t))
             neigh.add(t);
     }
     
-    public boolean hasConnectionTo(Target t){
+    public boolean hasConnectionTo(District t){
 
         if (this.target.equals(t.getTarget())) {
             return true;
@@ -93,23 +93,17 @@ public class Target {
         return this.posX;
     }
 
-    public void setPosX(int posX) {
-        this.posX = posX;
-    }
 
     public double getPosY() {
         return this.posY;
     }
 
-    public void setPosY(int posY) {
-        this.posY = posY;
-    }
 
-    public ArrayList<Target> getNeigh() {
+    public ArrayList<District> getNeigh() {
         return this.neigh;
     }
 
-    public void upgrade() {
+    public void update() {
 
         double[] tmp = Toolkit.nodePosition(graph, target.getId());
         posX = tmp[0];

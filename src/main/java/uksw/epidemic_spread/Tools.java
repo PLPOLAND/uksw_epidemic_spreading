@@ -62,6 +62,18 @@ public class Tools {
         }
     }
 
+    public static void printMsg(String msg) {
+        System.out.println();
+        for (int i = 0; i < msg.length() + 15; i++) {
+            System.out.print("-");
+        }
+        System.out.println("\n\t" + msg);
+        for (int i = 0; i < msg.length() + 15; i++) {
+            System.out.print("-");
+        }
+        System.out.println();
+    }
+
     public static double calculateLength(double x1,double y1, double x2, double y2) {
         
         double xL = Math.abs(x1 - x2);
