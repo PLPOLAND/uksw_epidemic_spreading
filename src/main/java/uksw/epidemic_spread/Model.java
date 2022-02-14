@@ -3,6 +3,7 @@ package uksw.epidemic_spread;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.ProxyPipe;
@@ -26,6 +27,14 @@ public class Model {
     Model(){
         screen = new SingleGraph("EpidemicSpread");
         screen.addAttribute("ui.antialias");
+        String shortStyle = "";
+        if (Constants.NIGHT_MODE) {
+             shortStyle = "graph {fill-color: #111111; " + "padding: 5px; }";
+        }
+        else{
+            shortStyle = "graph {fill-color: #EEEEEE; " + "padding: 5px; }";
+        }
+        screen.addAttribute("ui.stylesheet", shortStyle);
 
         Viewer v =  screen.display(false);
         pipe = v.newViewerPipe();
@@ -49,13 +58,32 @@ public class Model {
         corners[3].addAttribute("x", 0);
         corners[3].addAttribute("y", 0);
         corners[3].setAttribute("ui.style", "size:0px;");
+        Edge e1 = screen.addEdge("LT-RT", corners[0], corners[1], false);
+        Edge e2 = screen.addEdge("LT-LB", corners[0], corners[3], false);
+        Edge e3 = screen.addEdge("RT-RB", corners[1], corners[2], false);
+        Edge e4 = screen.addEdge("RB-LB", corners[2], corners[3], false);
+        
+        if (Constants.NIGHT_MODE) {
+            String style = "fill-color: #EEEEEE;";
+            e1.addAttribute("ui.style", style);
+            e2.addAttribute("ui.style", style);
+            e3.addAttribute("ui.style", style);
+            e4.addAttribute("ui.style", style);
+        } else {
+            String style = "fill-color: #000000;";
+            e1.addAttribute("ui.style", style);
+            e2.addAttribute("ui.style", style);
+            e3.addAttribute("ui.style", style);
+            e4.addAttribute("ui.style", style);
+        }
 
-        screen.addEdge("LT-RT", corners[0], corners[1], false);
-        screen.addEdge("LT-LB", corners[0], corners[3], false);
-        screen.addEdge("RT-RB", corners[1], corners[2], false);
-        screen.addEdge("RB-LB", corners[2], corners[3], false);
-
-        makeDistricts(Constants.NUMBER_OF_DISTRICTS);
+        if (Constants.MANHATTAN_MOBILITY_MODEL) {
+            makeManhattanDistricts(Constants.NUMBER_OF_DISTRICTS_IN_MANHATTAN);
+        }
+        else{
+            makeDistricts(Constants.NUMBER_OF_DISTRICTS);
+            
+        }
 
         // Tools.hitAKkey("Hit ENTER, to PUT the army", true); //TODO uncomment
 
@@ -114,6 +142,69 @@ public class Model {
         }
 
     }
+
+/**
+     * Creating districts and connects them
+     * @param districtsNum numver of distrticts to create
+     */
+    public void makeManhattanDistricts(int nSize) {
+        int districtsNum = nSize * nSize;
+        for (int i = 0; i < nSize; i++) {
+            for (int j = 0; j < nSize; j++) {
+                District tmp = new District(screen);
+    
+                int numZ = nSize*2;
+                double z = Constants.SIZE_OF_SCREAN/ (double) numZ;
+                if (z < Constants.SIZE_OF_DISTRICT) {
+                    System.err.println("ERROR! Too much districts or size of districts are too big!");
+                    System.exit(1);
+                }
+                double x = 0;
+                double y = 0;
+
+                x = z + i*2*z;
+                y = z + j*2*z;
+
+                tmp.setNewPos(x, y);
+                districts.add(tmp);
+                
+            }
+        }
+
+        for (int i = 0; i < nSize; i++) {
+            for (int j = 0; j < nSize; j++) {
+                District tmp =districts.get(i*nSize + j);
+                
+                int x = 0;
+                int y = 0;
+                int index = 0;
+                
+                if (i - 1 >= 0) {
+                    y = i-1;
+                    x = j;
+                    index = x + y*nSize;
+                    District tmpTp = null;
+                    if (j<= districts.size()) {
+                        tmpTp = districts.get(index);
+                        tmp.connectTo(tmpTp);
+                    }
+                }
+                if (j - 1 >=0) {
+                    y = i;
+                    x = j - 1;
+                    index = x + y*nSize;
+                    District tmpTp = null;
+                    if (j<= districts.size()) {
+                        tmpTp = districts.get(index);
+                        tmp.connectTo(tmpTp);
+                    }
+                }
+                
+            }
+        }
+
+    }
+
     /**
      * Creates the army to test on
      * @param size how many soldiers

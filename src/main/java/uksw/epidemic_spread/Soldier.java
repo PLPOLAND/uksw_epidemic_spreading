@@ -54,7 +54,7 @@ public class Soldier {
         me.addAttribute("sick", "S");
         
         int x=0, y=0; 
-        if (Constants.SPAWN_ON_TARGETS) {
+        if (Constants.SPAWN_ON_DISTRICT) {
             
             double r = Constants.SIZE_OF_DISTRICT * Math.sqrt(random.nextDouble()) * 0.95;
             double theta = random.nextDouble() * 2 * Math.PI;
@@ -76,6 +76,7 @@ public class Soldier {
         posY = y;
         me.setAttribute("x", x);
         me.setAttribute("y", y);
+        me.setAttribute("z", 10);
 
 
         int randNum = random.nextInt(target.getNeigh().size());
@@ -84,11 +85,19 @@ public class Soldier {
         r = random.nextInt(100);
         g = random.nextInt(255);
         b = random.nextInt(255);
-
-        while (0.2126 * r + 0.7152 * g + 0.0722 * b > 200 || (r>=b && r>=g)) {// to make colors darker
-            r = random.nextInt(100);
-            g = random.nextInt(255);
-            b = random.nextInt(255);
+        if (Constants.NIGHT_MODE) {
+            while (0.2126 * r + 0.7152 * g + 0.0722 * b < 150 || (r>=b && r>=g)) {// to make colors darker
+                r = random.nextInt(100);
+                g = random.nextInt(255);
+                b = random.nextInt(255);
+            }
+        }
+        else{
+            while (0.2126 * r + 0.7152 * g + 0.0722 * b > 200 || (r >= b && r >= g)) {// to make colors darker
+                r = random.nextInt(100);
+                g = random.nextInt(255);
+                b = random.nextInt(255);
+            }
         }
 
         me.setAttribute("ui.style", "fill-color: rgb("+r+","+ g+","+b+"); size: "+Constants.SIZE_OF_SOLDIER+";");
@@ -214,6 +223,8 @@ public class Soldier {
             me.setAttribute("x", x);
             posY = y;
             me.setAttribute("y", y);
+
+            me.setAttribute("z", 10);   
         }
         else{
             //TODO ERROR
@@ -248,6 +259,7 @@ public class Soldier {
             posY = y;
             me.setAttribute("x", x);
             me.setAttribute("y", y);
+            me.setAttribute("z", 10);
         }
         //else do Nothing
     }

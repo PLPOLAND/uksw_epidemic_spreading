@@ -35,7 +35,7 @@ public class Main {
             //     m.army.get(random.nextInt(Constants.SIZE_OF_ARMY)).makeRecovered();
             // }
             m.tic();
-            // Tools.pause(1);
+            Tools.pause(1);
         }
 
 
