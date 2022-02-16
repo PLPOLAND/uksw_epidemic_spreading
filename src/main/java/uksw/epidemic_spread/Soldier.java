@@ -39,6 +39,7 @@ public class Soldier {
     private int b = 0;
 
     private long timeToLeaveTargetField = System.currentTimeMillis();
+    private boolean outOfTarget = false;
 
     Soldier(SingleGraph graph, ArrayList<District> targets){
         this.graph = graph;
@@ -113,16 +114,18 @@ public class Soldier {
             long now = System.currentTimeMillis();
 
             String stateOfIllnes = me.getAttribute("sick");
+            
 
-            if (timeToLeaveTargetField < now && !stateOfIllnes.equals("E")) {//start the counter
+            if (timeToLeaveTargetField < now && outOfTarget) {//start the counter
                 timeToLeaveTargetField = now + random.nextInt(Constants.MAX_STAY_TIME);
                 if (stateOfIllnes.equals("S")) {//only if Susceptible
-                    me.setAttribute("sick", "E");
+                    makeExposed();
                 }
                 tmpTarX = target.getPosX();
                 tmpTarY = target.getPosY();
+                outOfTarget = false;
             }
-            else if (timeToLeaveTargetField>= now && !stateOfIllnes.equals("S")) {
+            else if (timeToLeaveTargetField>= now && !outOfTarget) {
                 if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {//TODO not working as it should
                     //take new target point in target circle
                     int x =0 , y= 0;
@@ -156,10 +159,11 @@ public class Soldier {
 
                 moveToTarget(tmpTarX+ tmpTardX, tmpTarY + tmpTardY);
             }
-            else if(timeToLeaveTargetField < now && !stateOfIllnes.equals("S")){
+            else if(timeToLeaveTargetField < now){
                 if (stateOfIllnes.equals("E")) {
-                    me.setAttribute("sick", "S");
+                    this.makeSusceptible();
                 }
+                outOfTarget = true;
                 chooseNewDistrict();
             }
         }
@@ -268,7 +272,7 @@ public class Soldier {
      * Marking guy as I
      */
     public void makeInfected() {
-        me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/3+","+b/3+");");
+        me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/5+","+b/5+");");
         me.addAttribute("sick", "I");
     }
     /**
