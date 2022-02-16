@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.graphstream.algorithm.Toolkit;
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
@@ -29,6 +30,14 @@ public class District {
     private static int edgeGrayColor = random.nextInt(150);
 
     ArrayList<District> neigh;
+
+
+
+
+    
+    private ArrayList<Soldier> inTargetSoldiers = new ArrayList<>();
+    private ArrayList<Edge> inTargetSoldiersEdges = new ArrayList<>();
+
 
     District(SingleGraph graph){
         neigh = new ArrayList<>();
@@ -143,4 +152,68 @@ public class District {
         posY = tmp[1];
     }
     
+    public ArrayList<Soldier> getInTargetSoldiers() {
+        return this.inTargetSoldiers;
+    }
+    
+    /**
+     * Adds soldier to district, and connects it others
+     * @param soldier
+     */
+    public void addSoldierToMe(Soldier soldier) {
+        if (!inTargetSoldiers.contains(soldier)) {
+            inTargetSoldiers.add(soldier);
+        }
+        // disconnetAllSoldiers();
+        connectSoldiers();
+    }
+
+
+    /**
+     * Removing soldier from district, and removes it's connects to others
+     * @param soldier soldier to remove
+     */
+    public void removeSoldierFromMe(Soldier soldier){
+        if (inTargetSoldiers.contains(soldier)) {
+            Edge tmpToDelete = null;
+            for (Edge edge : inTargetSoldiersEdges) {
+                if (edge.getNode0().equals(soldier.getNode()) || edge.getNode1().equals(soldier.getNode())) {
+                    if (graph.getEdgeSet().contains(edge)) {
+                        try {
+                           tmpToDelete = graph.removeEdge(edge.getId());
+                            
+                        } catch (ElementNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            if (tmpToDelete != null) {
+                inTargetSoldiersEdges.remove(tmpToDelete);
+            }
+            inTargetSoldiers.remove(soldier);
+        }
+
+    }
+
+    /**
+     * Connecting all soldiers, but not that with "R" flag!
+     */
+    public void connectSoldiers(){
+        for (Soldier soldier : inTargetSoldiers) {
+            for (Soldier soldier2 : inTargetSoldiers) {
+                try {
+                    if (!soldier.equals(soldier2) && !soldier.getNode().getAttribute("sick", String.class).equals("R") && 
+                                                     !soldier2.getNode().getAttribute("sick", String.class).equals("R")) {
+                            Edge e = graph.addEdge(soldier.getNode().getId() + "_" + soldier2.getNode().getId(), soldier.getNode(), soldier2.getNode(), false);
+                            if (!inTargetSoldiersEdges.contains(e)) {
+                                inTargetSoldiersEdges.add(e);
+                            }
+                    }
+                } catch (Exception e) {
+                    //DO nothing, there is already the edge
+                }
+            }
+        }
+    }
 }

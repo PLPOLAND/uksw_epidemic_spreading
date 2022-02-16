@@ -9,6 +9,8 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.ProxyPipe;
 import org.graphstream.ui.view.Viewer;
 
+import scala.collection.immutable.Stream.Cons;
+
 /**
  * The class that is responsible for creating the experiment environment
  */
@@ -97,6 +99,10 @@ public class Model {
             person.update();
         }
         makeTheArmyOfAsgard(Constants.SIZE_OF_ARMY);
+        for (int i = 0; i < Constants.SIZE_OF_ARMY/3; i++) {
+            army.get(random.nextInt(army.size())).makeRecovered();
+            army.get(random.nextInt(army.size())).makeInfected();
+        }
 
     }
     /**

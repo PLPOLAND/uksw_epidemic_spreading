@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import org.graphstream.algorithm.Toolkit;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
@@ -39,7 +40,9 @@ public class Soldier {
     private int b = 0;
 
     private long timeToLeaveTargetField = System.currentTimeMillis();
-    private boolean outOfTarget = false;
+
+
+    private ArrayList<Soldier> neighSoldiers = new ArrayList<>();
 
     Soldier(SingleGraph graph, ArrayList<District> targets){
         this.graph = graph;
@@ -53,6 +56,7 @@ public class Soldier {
         me = this.graph.addNode("P"+nextPersonID++);
         me.addAttribute("person", true);
         me.addAttribute("sick", "S");
+        // me.addAttribute("ui.label", me.getId());
         
         int x=0, y=0; 
         if (Constants.SPAWN_ON_DISTRICT) {
@@ -114,37 +118,22 @@ public class Soldier {
             long now = System.currentTimeMillis();
 
             String stateOfIllnes = me.getAttribute("sick");
-            
 
-            if (timeToLeaveTargetField < now && outOfTarget) {//start the counter
+            this.neighSoldiers = target.getInTargetSoldiers();
+
+            if (timeToLeaveTargetField < now && !stateOfIllnes.equals("E")) {//start the counter
                 timeToLeaveTargetField = now + random.nextInt(Constants.MAX_STAY_TIME);
                 if (stateOfIllnes.equals("S")) {//only if Susceptible
-                    makeExposed();
+                    me.setAttribute("sick", "E");
                 }
                 tmpTarX = target.getPosX();
                 tmpTarY = target.getPosY();
-                outOfTarget = false;
+                target.addSoldierToMe(this);
             }
-            else if (timeToLeaveTargetField>= now && !outOfTarget) {
-                if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {//TODO not working as it should
+            else if (timeToLeaveTargetField>= now && !stateOfIllnes.equals("S")) {
+                if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {
                     //take new target point in target circle
                     int x =0 , y= 0;
-                    // double resizeCircle = 0.9;
-                    // int dx = (random.nextInt((int) (Constants.SIZE_OF_TARGET * resizeCircle)) * 2)- (int) (Constants.SIZE_OF_TARGET * resizeCircle);
-                    // x += dx;
-                    // int dy = (random.nextInt((int) (Constants.SIZE_OF_TARGET * resizeCircle)) * 2)- (int) (Constants.SIZE_OF_TARGET * resizeCircle);
-                    // y += dy;
-
-                    // while (!Tools.checkPosition(x, y)) {
-                    //     x = (int) target.getPosX();
-                    //     dx = (random.nextInt((int) (Constants.SIZE_OF_TARGET * resizeCircle)) * 2)
-                    //             - (int) (Constants.SIZE_OF_TARGET * resizeCircle);
-                    //     x += dx;
-                    //     y = (int) target.getPosY();
-                    //     dy = (random.nextInt((int) (Constants.SIZE_OF_TARGET * resizeCircle)) * 2)
-                    //             - (int) (Constants.SIZE_OF_TARGET * resizeCircle);
-                    //     y += dy;
-                    // }
 
                     double r = Constants.SIZE_OF_DISTRICT * Math.sqrt(random.nextDouble())* 0.95;
                     double theta = random.nextDouble() * 2 * Math.PI;
@@ -159,11 +148,11 @@ public class Soldier {
 
                 moveToTarget(tmpTarX+ tmpTardX, tmpTarY + tmpTardY);
             }
-            else if(timeToLeaveTargetField < now){
+            else if(timeToLeaveTargetField < now && !stateOfIllnes.equals("S")){
                 if (stateOfIllnes.equals("E")) {
-                    this.makeSusceptible();
+                    me.setAttribute("sick", "S");
                 }
-                outOfTarget = true;
+                target.removeSoldierFromMe(this);
                 chooseNewDistrict();
             }
         }
@@ -272,14 +261,14 @@ public class Soldier {
      * Marking guy as I
      */
     public void makeInfected() {
-        me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/5+","+b/5+");");
+        me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/3+","+b/3+");");
         me.addAttribute("sick", "I");
     }
     /**
      * Marking guy as R
      */
     public void makeRecovered() {
-        me.addAttribute("ui.style", "fill-color: rgb(180,180,180);");
+        me.addAttribute("ui.style", "fill-color: rgb(250,250,250);");
         me.addAttribute("sick", "R");
     }
     /**
@@ -297,6 +286,9 @@ public class Soldier {
         me.addAttribute("sick", "E");
     }
 
-    
+    public Node getNode(){
+        return this.me;
+    }
+
 
 }
