@@ -1,8 +1,11 @@
 package uksw.epidemic_spread;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.graphstream.algorithm.Toolkit;
 import org.graphstream.graph.Edge;
@@ -35,15 +38,22 @@ public class Soldier {
     private double tmpTardY = 0;
 
 
-    private int r = 0;
-    private int g = 0;
-    private int b = 0;
+    private int red = 0;
+    private int green = 0;
+    private int blue = 0;
 
     private boolean shouldBeOnTarget = false;
     private long timeToLeaveTargetField = System.currentTimeMillis();
+    private long timeStartInfection = 0;
+    private long timeRecovered = 0;
+
+    private boolean preinfected = false;
 
 
     private ArrayList<Soldier> neighSoldiers = new ArrayList<>();
+    private HashMap<Soldier,Long> neighSoldiersTime = new HashMap<>();
+
+    long lastTickTime = 0;
 
     Soldier(SingleGraph graph, ArrayList<District> targets){
         this.graph = graph;
@@ -82,42 +92,41 @@ public class Soldier {
         posY = y;
         me.setAttribute("x", x);
         me.setAttribute("y", y);
-        me.setAttribute("z", 10);
+        // me.setAttribute("z", 10);
 
 
         int randNum = random.nextInt(target.getNeigh().size());
         this.target = target.getNeigh().get(randNum);
 
-        r = random.nextInt(100);
-        g = random.nextInt(255);
-        b = random.nextInt(255);
+        red = random.nextInt(100);
+        green = random.nextInt(255);
+        blue = random.nextInt(255);
         if (Constants.NIGHT_MODE) {
-            while (0.2126 * r + 0.7152 * g + 0.0722 * b < 150 || (r>=b && r>=g)) {// to make colors darker
-                r = random.nextInt(100);
-                g = random.nextInt(255);
-                b = random.nextInt(255);
+            while (0.2126 * red + 0.7152 * green + 0.0722 * blue < 150 || (red>=blue && red>=green)) {// to make colors darker
+                red = random.nextInt(100);
+                green = random.nextInt(255);
+                blue = random.nextInt(255);
             }
         }
         else{
-            while (0.2126 * r + 0.7152 * g + 0.0722 * b > 200 || (r >= b && r >= g)) {// to make colors darker
-                r = random.nextInt(100);
-                g = random.nextInt(255);
-                b = random.nextInt(255);
+            while (0.2126 * red + 0.7152 * green + 0.0722 * blue > 200 || (red >= blue && red >= green)) {// to make colors darker
+                red = random.nextInt(100);
+                green = random.nextInt(255);
+                blue = random.nextInt(255);
             }
         }
 
-        me.setAttribute("ui.style", "fill-color: rgb("+r+","+ g+","+b+"); size: "+Constants.SIZE_OF_SOLDIER+";");
-
+        me.setAttribute("ui.style", "fill-color: rgb("+red+","+ green+","+blue+"); size: "+Constants.SIZE_OF_SOLDIER+";");
+        lastTickTime = System.currentTimeMillis();
     }
     
     /**
      * It controls traffic and everything that needs to be done on a regular basis
      */
     public void tic(){
-
+        long now = System.currentTimeMillis();
+        calculateSick(now - lastTickTime);
         if(isOnTarget() ){
-            long now = System.currentTimeMillis();
-
             String stateOfIllnes = me.getAttribute("sick");
 
             this.neighSoldiers = target.getInTargetSoldiers();
@@ -131,7 +140,7 @@ public class Soldier {
                 tmpTarY = target.getPosY();
                 target.addSoldierToMe(this);
                 shouldBeOnTarget = true;
-            }
+            } 
             else if (timeToLeaveTargetField>= now ) {
                 if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {
                     //take new target point in target circle
@@ -156,14 +165,17 @@ public class Soldier {
                     me.setAttribute("sick", "S");
                 }
                 target.removeSoldierFromMe(this);
+                this.neighSoldiersTime.clear();//remove all soldiers time 
                 chooseNewDistrict();
             }
         }
         else{
             moveToTarget();
         }
-
+        lastTickTime = now;
     }
+    
+
     /** choosing new target disctrict */
     private void chooseNewDistrict() {
         int randNum = random.nextInt(target.getNeigh().size());
@@ -230,9 +242,6 @@ public class Soldier {
     public void update() {
         this.tmpTarX = target.getPosX();
         this.tmpTarY = target.getPosY();
-        // double[] tmp = Toolkit.nodePosition(graph, me.getId());
-        // this.posX = tmp[0];
-        // this.posY = tmp[1];
     }
     /**
      * Make new start position
@@ -260,12 +269,25 @@ public class Soldier {
         //else do Nothing
     }
 
+    public void mekePreinfected() {
+        
+        timeStartInfection = System.currentTimeMillis();
+        preinfected = true;
+        
+        System.out.println(me.getId() + " made preinfected");
+        me.addAttribute("ui.style", "fill-color: rgb(0,0,0);");
+    }
+
     /**
      * Marking guy as I
      */
-    public void makeInfected() {
-        me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/3+","+b/3+");");
+    private void makeInfected() {
+        me.addAttribute("ui.style", "fill-color: rgb(255,0,0);");
+        // me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/3+","+b/3+");"); //if we want red to be not only one color
         me.addAttribute("sick", "I");
+        System.out.println(me.getId() + " made I");
+        preinfected = false;
+        
     }
     /**
      * Marking guy as R
@@ -273,23 +295,82 @@ public class Soldier {
     public void makeRecovered() {
         me.addAttribute("ui.style", "fill-color: rgb(250,250,250);");
         me.addAttribute("sick", "R");
+        System.out.println(me.getId() + " made R");
+        timeRecovered = System.currentTimeMillis();
     }
     /**
      * Marking guy as S
      */
     public void makeSusceptible() {
-        me.addAttribute("ui.style", "fill-color: rgb(" + r + "," + g + "," + b + ");");
+        me.addAttribute("ui.style", "fill-color: rgb(" + red + "," + green + "," + blue + ");");
         me.addAttribute("sick", "S");
+        System.out.println(me.getId() + " made S");
     }
     /**
      * Marking guy as E
      */
     public void makeExposed() {
-        // me.addAttribute("ui.style", "fill-color: rgb(180,180,180);");
+        me.addAttribute("ui.style", "fill-color: rgb(" + red + "," + green + "," + blue + ");");
         me.addAttribute("sick", "E");
     }
 
-    public Node getNode(){
+    private void calculateSick(long tickTime) {
+        String stateOfSick = me.getAttribute("sick");
+        long now = System.currentTimeMillis();
+        if (this.preinfected && this.timeStartInfection + Constants.I_DELAY_TIME < now) {
+            this.makeInfected();
+        }
+        else if(stateOfSick.equals("I") && this.timeStartInfection + Constants.I_DELAY_TIME+ Constants.INFECTIOUS_TIME < now){
+            this.makeRecovered();
+        }
+        else if(stateOfSick.equals("R") && this.timeRecovered + Constants.RECOVER_TIME < now){
+            if (this.isOnTarget()) {
+                this.makeExposed();
+            }
+            else{
+                this.makeSusceptible();
+            }
+        }
+
+        if (stateOfSick.equals("I") && isOnTarget()) {
+
+            removeOutSoldiersFromTime();
+
+            if (!this.neighSoldiers.isEmpty()) {
+                for (Soldier soldier : this.neighSoldiers) {
+                    if (this.neighSoldiersTime.containsKey(soldier)) {
+                        neighSoldiersTime.replace(soldier, neighSoldiersTime.get(soldier)+tickTime);
+                        // double tmpT = neighSoldiersTime.get(soldier);
+                        double tmpT = neighSoldiersTime.get(soldier)/(double)Constants.SECOND;
+                        if (tmpT<1)
+                            tmpT = 0d;
+                        double probability = (1/Math.sqrt(tmpT));
+                        double rand = random.nextDouble();
+                        if (rand < probability && ((String)(soldier.getNode().getAttribute("sick"))).equals("E") && !soldier.preinfected) {
+                                soldier.mekePreinfected();
+                        }
+                    }
+                    else{
+                        neighSoldiersTime.put(soldier, 0l);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void removeOutSoldiersFromTime() {
+        HashMap<Soldier, Long> tmp = (HashMap<Soldier, Long>) this.neighSoldiersTime.clone();
+
+        for (Soldier soldier : tmp.keySet()) {
+            if (!this.neighSoldiers.contains(soldier)) {
+                this.neighSoldiersTime.replace(soldier, 0l);
+            }
+        }
+
+    }
+
+    public Node getNode() {
         return this.me;
     }
 
