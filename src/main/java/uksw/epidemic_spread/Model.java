@@ -34,7 +34,7 @@ public class Model {
              shortStyle = "graph {fill-color: #111111; " + "padding: 5px; }";
         }
         else{
-            shortStyle = "graph {fill-color: #EEEEEE; " + "padding: 5px; }";
+            shortStyle = "graph {fill-color: #DDDDDD; " + "padding: 5px; }";
         }
         screen.addAttribute("ui.stylesheet", shortStyle);
 
@@ -99,9 +99,8 @@ public class Model {
             person.update();
         }
         makeTheArmyOfAsgard(Constants.SIZE_OF_ARMY);
-        for (int i = 0; i < Constants.SIZE_OF_ARMY/10; i++) {
-            army.get(random.nextInt(army.size())).makeRecovered();
-            army.get(random.nextInt(army.size())).makeInfected();
+        for (int i = 0; i < Constants.SOLDIERS_TO_MAKE_SICK_ON_BEGIN_OF_SYM; i++) {
+            army.get(random.nextInt(army.size())).mekePreinfected();
         }
 
     }

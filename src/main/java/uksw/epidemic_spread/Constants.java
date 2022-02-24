@@ -29,6 +29,7 @@ public class Constants {
     
     public static final boolean NIGHT_MODE = false;
     
+    public static final int SOLDIERS_TO_MAKE_SICK_ON_BEGIN_OF_SYM = 1;
     
     
 }
