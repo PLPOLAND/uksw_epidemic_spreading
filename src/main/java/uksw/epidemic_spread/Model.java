@@ -99,7 +99,7 @@ public class Model {
             person.update();
         }
         makeTheArmyOfAsgard(Constants.SIZE_OF_ARMY);
-        for (int i = 0; i < Constants.SIZE_OF_ARMY/3; i++) {
+        for (int i = 0; i < Constants.SIZE_OF_ARMY/10; i++) {
             army.get(random.nextInt(army.size())).makeRecovered();
             army.get(random.nextInt(army.size())).makeInfected();
         }

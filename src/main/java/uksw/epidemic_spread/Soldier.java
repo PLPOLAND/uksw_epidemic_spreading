@@ -39,6 +39,7 @@ public class Soldier {
     private int g = 0;
     private int b = 0;
 
+    private boolean shouldBeOnTarget = false;
     private long timeToLeaveTargetField = System.currentTimeMillis();
 
 
@@ -121,7 +122,7 @@ public class Soldier {
 
             this.neighSoldiers = target.getInTargetSoldiers();
 
-            if (timeToLeaveTargetField < now && !stateOfIllnes.equals("E")) {//start the counter
+            if (timeToLeaveTargetField < now && !shouldBeOnTarget) {//start the counter
                 timeToLeaveTargetField = now + random.nextInt(Constants.MAX_STAY_TIME);
                 if (stateOfIllnes.equals("S")) {//only if Susceptible
                     me.setAttribute("sick", "E");
@@ -129,8 +130,9 @@ public class Soldier {
                 tmpTarX = target.getPosX();
                 tmpTarY = target.getPosY();
                 target.addSoldierToMe(this);
+                shouldBeOnTarget = true;
             }
-            else if (timeToLeaveTargetField>= now && !stateOfIllnes.equals("S")) {
+            else if (timeToLeaveTargetField>= now ) {
                 if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {
                     //take new target point in target circle
                     int x =0 , y= 0;
@@ -148,7 +150,8 @@ public class Soldier {
 
                 moveToTarget(tmpTarX+ tmpTardX, tmpTarY + tmpTardY);
             }
-            else if(timeToLeaveTargetField < now && !stateOfIllnes.equals("S")){
+            // else if(timeToLeaveTargetField < now ){
+            else {
                 if (stateOfIllnes.equals("E")) {
                     me.setAttribute("sick", "S");
                 }
@@ -168,7 +171,7 @@ public class Soldier {
 
         tmpTarX = target.getPosX();
         tmpTarY = target.getPosY();
-
+        this.shouldBeOnTarget = false;
         moveToTarget();
     }
     private void moveToTarget() {
