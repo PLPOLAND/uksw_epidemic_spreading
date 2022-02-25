@@ -56,14 +56,14 @@ public class Soldier {
     long lastTickTime = 0;
 
     Soldier(SingleGraph graph, List<District> targets){
-        this.graph = graph;;
+        this.graph = graph;
         target = targets.get(random.nextInt(targets.size()));
 
         speed = Constants.MAX_SPEED* random.nextDouble();
         if (speed<0.1) {
             speed = 0.1;
         }
-        me = this.graph.addNode("P"+nextPersonID++);
+        me = this.graph.addNode("S"+nextPersonID++);
         me.addAttribute("person", true);
         me.addAttribute("sick", "S");
         // me.addAttribute("ui.label", me.getId());
