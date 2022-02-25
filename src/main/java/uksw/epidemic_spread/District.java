@@ -70,7 +70,7 @@ public class District {
                 g = random.nextInt(255);
                 b = random.nextInt(255);
             }
-            while (edgeGrayColor < 50) {
+            while (edgeGrayColor < 100) {
                 District.edgeGrayColor = random.nextInt(255);
             }
         } else {

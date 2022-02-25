@@ -3,6 +3,7 @@ package uksw.epidemic_spread;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -29,7 +30,6 @@ public class Soldier {
 
     private double speed = 0;
 
-    private ArrayList<District> targets = null;
     private District target;
 
     private double tmpTarX = 0;
@@ -55,9 +55,8 @@ public class Soldier {
 
     long lastTickTime = 0;
 
-    Soldier(SingleGraph graph, ArrayList<District> targets){
-        this.graph = graph;
-        this.targets = targets;
+    Soldier(SingleGraph graph, List<District> targets){
+        this.graph = graph;;
         target = targets.get(random.nextInt(targets.size()));
 
         speed = Constants.MAX_SPEED* random.nextDouble();
@@ -374,5 +373,8 @@ public class Soldier {
         return this.me;
     }
 
+    public String getStateOfIllnes(){
+        return (String) this.me.getAttribute("sick");
+    }
 
 }

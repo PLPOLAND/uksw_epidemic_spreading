@@ -3,6 +3,9 @@ package uksw.epidemic_spread;
 import java.io.IOException;
 import java.util.Random;
 
+import uksw.epidemic_spread.gnuplot.Counter;
+import uksw.epidemic_spread.gnuplot.GnuplotPrint;
+
 
 public class Main {
     static volatile boolean endStart = false;
@@ -27,20 +30,25 @@ public class Main {
         
         Tools.hitAKkey("Hit ENTER, to START SYMULATION",true);
         endStart = true;//end replacing!
-
-        while (true) {//TODO set correct end argument
-            // static Random random = new Random(System.currentTimeMillis());
-            // double c = random.nextDouble();//For tests
-            // if (c <0.05) {
-            //     m.army.get(random.nextInt(Constants.SIZE_OF_ARMY)).makeRecovered();
-            // }
+        m.preInfectArmyForExperiment();
+        long start_time = System.currentTimeMillis();
+        GnuplotPrint printer = new GnuplotPrint("tmp.txt");
+        
+        Counter counter = new Counter(m.army, start_time, printer);
+        counter.start();
+        
+        while (System.currentTimeMillis()< Constants.TIME_OF_EXPERIMENT + start_time) {//TODO set correct end argument
+            
             m.tic();
             Tools.pause(1);
         }
 
+        counter.end();
+        printer.close();
+        printer.createPLT();
 
-        // Tools.hitAKkey("Hit ENTER, to END program",true);
-        // System.exit(0);
+        Tools.hitAKkey("Experiment Ended! \nHit ENTER, to END program",true);
+        System.exit(0);
     }
     
 }

@@ -1,6 +1,8 @@
 package uksw.epidemic_spread;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import org.graphstream.graph.Edge;
@@ -18,9 +20,9 @@ public class Model {
     /** Graph where the environment is shown */
     SingleGraph screen;
     /** Holds army participating in the experiment */
-    ArrayList<Soldier> army = new ArrayList<>();
+    List<Soldier> army = Collections.synchronizedList(new ArrayList<>());
     /** Holds districts of the experiment */
-    ArrayList<District> districts = new ArrayList<>();
+    List<District> districts = Collections.synchronizedList(new ArrayList<>());
 
     Random random = new Random(System.currentTimeMillis());
     /**Used to updete location of districted if moved*/
@@ -79,7 +81,7 @@ public class Model {
             e4.addAttribute("ui.style", style);
         }
 
-        if (Constants.MANHATTAN_MOBILITY_MODEL) {
+        if (Constants.AKA_MANHATTAN_MOBILITY_MODEL) {
             makeManhattanDistricts(Constants.NUMBER_OF_DISTRICTS_IN_MANHATTAN);
         }
         else{
@@ -99,11 +101,18 @@ public class Model {
             person.update();
         }
         makeTheArmyOfAsgard(Constants.SIZE_OF_ARMY);
+        
+        
+
+    }
+
+
+    public void preInfectArmyForExperiment() {
         for (int i = 0; i < Constants.SOLDIERS_TO_MAKE_SICK_ON_BEGIN_OF_SYM; i++) {
             army.get(random.nextInt(army.size())).mekePreinfected();
         }
-
     }
+
     /**
      * Creating districts and connects them
      * @param districtsNum numver of distrticts to create
@@ -122,11 +131,11 @@ public class Model {
             }
 
             ArrayList<District> tmpDistricts = new ArrayList<>(districts);
-            for (int i = 0; i < connetions; i++) {
+            for (int i = 0; i < connetions && target.neigh.size()< Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_DISTRICT; i++) {
                 try{
                     District districtToConnect = tmpDistricts.get(random.nextInt(tmpDistricts.size()));
                     boolean hasNoMore = false;
-                    while (target.hasConnectionTo(districtToConnect)) {
+                    while (target.hasConnectionTo(districtToConnect) || districtToConnect.getNeigh().size()>=Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_DISTRICT) {
                         if (tmpDistricts.isEmpty()) {
                             hasNoMore = true;
                             break;
@@ -135,7 +144,7 @@ public class Model {
                         districtToConnect = tmpDistricts.get(tmp);  
                         tmpDistricts.remove(tmp);
                     }
-                    if (!hasNoMore) {
+                    if (!hasNoMore && districtToConnect.getNeigh().size()<Constants.MAX_NUMBER_OF_CONNECTIONS_FROM_DISTRICT) {
                         target.connectTo(districtToConnect);
                     }
                 }
