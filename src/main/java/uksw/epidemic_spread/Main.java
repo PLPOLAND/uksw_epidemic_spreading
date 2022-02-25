@@ -40,7 +40,7 @@ public class Main {
         while (System.currentTimeMillis()< Constants.TIME_OF_EXPERIMENT + start_time) {//TODO set correct end argument
             
             m.tic();
-            Tools.pause(1);
+            Tools.pause(10);
         }
 
         counter.end();

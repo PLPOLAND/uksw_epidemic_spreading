@@ -60,8 +60,8 @@ public class Soldier {
         target = targets.get(random.nextInt(targets.size()));
 
         speed = Constants.MAX_SPEED* random.nextDouble();
-        if (speed<0.1) {
-            speed = 0.1;
+        if (speed<Constants.MIN_SPEED) {
+            speed = Constants.MIN_SPEED;
         }
         me = this.graph.addNode("S"+nextPersonID++);
         me.addAttribute("person", true);
@@ -115,7 +115,7 @@ public class Soldier {
             }
         }
 
-        me.setAttribute("ui.style", "fill-color: rgb("+red+","+ green+","+blue+"); size: "+Constants.SIZE_OF_SOLDIER+";");
+        me.setAttribute("ui.style", "fill-color: rgb("+red+","+ green+","+blue+"); size: "+Constants.SIZE_OF_SOLDIER+"; z-index: 4;");
         lastTickTime = System.currentTimeMillis();
     }
     

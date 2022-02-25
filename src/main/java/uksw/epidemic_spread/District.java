@@ -206,6 +206,7 @@ public class District {
                     if (!soldier.equals(soldier2) && !soldier.getNode().getAttribute("sick", String.class).equals("R") && 
                                                      !soldier2.getNode().getAttribute("sick", String.class).equals("R")) {
                             Edge e = graph.addEdge(soldier.getNode().getId() + "_" + soldier2.getNode().getId(), soldier.getNode(), soldier2.getNode(), false);
+                            e.addAttribute("ui.style", "z-index: 3;");
                             if (!inTargetSoldiersEdges.contains(e)) {
                                 inTargetSoldiersEdges.add(e);
                             }
