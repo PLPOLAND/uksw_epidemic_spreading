@@ -79,7 +79,7 @@ public class Soldier {
         me = this.graph.addNode("S"+nextSoldierID++);
         me.addAttribute("person", true);
         me.addAttribute("sick", "S");
-        me.addAttribute("ui.label", me.getId());
+        // me.addAttribute("ui.label", me.getId());
         
         int x=0, y=0; 
         if (Constants.SPAWN_ON_DISTRICT) {
