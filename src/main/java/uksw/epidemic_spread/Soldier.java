@@ -79,7 +79,7 @@ public class Soldier {
         me = this.graph.addNode("S"+nextSoldierID++);
         me.addAttribute("person", true);
         me.addAttribute("sick", "S");
-        // me.addAttribute("ui.label", me.getId());
+        me.addAttribute("ui.label", me.getId());
         
         int x=0, y=0; 
         if (Constants.SPAWN_ON_DISTRICT) {
@@ -314,7 +314,15 @@ public class Soldier {
         me.addAttribute("sick", "I");
         System.out.println(me.getId() + " made I");
         isPreinfected = false;
-        
+        //remove edges to others soldiers
+        Iterator<Node> tmp = me.getNeighborNodeIterator();
+        ArrayList<Node> tmp2 = new ArrayList<Node>();
+        while(tmp.hasNext()){
+            tmp2.add(tmp.next());
+        }
+        for (int i = 0; i < tmp2.size(); i++) {
+            graph.removeEdge(tmp2.get(i),me);
+        }
     }
     /**
      * Marking soldier as R
