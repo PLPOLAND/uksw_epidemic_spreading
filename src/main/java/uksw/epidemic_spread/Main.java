@@ -32,7 +32,7 @@ public class Main {
         endStart = true;//end replacing!
         m.preInfectArmyForExperiment();
         long start_time = System.currentTimeMillis();
-        GnuplotPrint printer = new GnuplotPrint("tmp.txt");
+        GnuplotPrint printer = new GnuplotPrint("result.txt");
         
         Counter counter = new Counter(m.army, start_time, printer);
         counter.start();

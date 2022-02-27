@@ -106,7 +106,9 @@ public class Model {
 
     }
 
-
+    /**
+     * Preinfect some soldiers to start experiment
+     */
     public void preInfectArmyForExperiment() {
         for (int i = 0; i < Constants.SOLDIERS_TO_MAKE_SICK_ON_BEGIN_OF_SYM; i++) {
             army.get(random.nextInt(army.size())).mekePreinfected();
@@ -157,7 +159,7 @@ public class Model {
 
     }
 
-/**
+    /**
      * Creating districts and connects them
      * @param districtsNum numver of distrticts to create
      */

@@ -10,7 +10,6 @@ import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
-import scala.language;
 
 public class District {
     
@@ -23,10 +22,12 @@ public class District {
     private double posX = 0;
     private double posY = 0;
 
+    //RGB color
     private int r = 0;
     private int g = 0;
     private int b = 0;
 
+    /** Color of edge */
     private static int edgeGrayColor = random.nextInt(150);
 
     ArrayList<District> neigh;
@@ -34,9 +35,10 @@ public class District {
 
 
 
-    
-    private ArrayList<Soldier> inTargetSoldiers = new ArrayList<>();
-    private ArrayList<Edge> inTargetSoldiersEdges = new ArrayList<>();
+    /**Soldiers in district */
+    private ArrayList<Soldier> inDistrictSoldiers = new ArrayList<>();
+    //For chacking 
+    private ArrayList<Edge> inDistrictSoldiersEdges = new ArrayList<>();
 
 
     District(SingleGraph graph){
@@ -87,24 +89,36 @@ public class District {
     }
 
 
-    public void connectTo(District t){
-        if (!this.target.equals(t.getTarget())) {
-            Edge e = graph.addEdge(target.getId()+"-"+t.getTarget().getId(), target, t.getTarget(), false);
+    /**
+     * Adds edge to this district
+     * @param dist
+     */
+    public void connectTo(District dist){
+        if (!this.target.equals(dist.getTarget())) {
+            Edge e = graph.addEdge(target.getId()+"-"+dist.getTarget().getId(), target, dist.getTarget(), false);
             
             e.setAttribute("ui.style", "size : 0.5px; fill-color: rgba("+ edgeGrayColor+","+ edgeGrayColor+","+ edgeGrayColor+",100);");
-            addToNeigh(t);
-            t.addToNeigh(this);
+            addToNeigh(dist);
+            dist.addToNeigh(this);
         }
     }
 
-    private void addToNeigh(District t) {
-        if(!neigh.contains(t))
-            neigh.add(t);
+    /**
+     * Adds district from param to container
+     * @param dist district to add
+     */
+    private void addToNeigh(District dist) {
+        if(!neigh.contains(dist))
+            neigh.add(dist);
     }
     
-    public boolean hasConnectionTo(District t){
+    /**
+     * Checks if there is edge to that district
+     * @param dis district to check connection
+     */
+    public boolean hasConnectionTo(District dis){
 
-        if (this.target.equals(t.getTarget())) {
+        if (this.target.equals(dis.getTarget())) {
             return true;
         }
 
@@ -112,7 +126,7 @@ public class District {
         boolean hasConnection = false;
         while(iterator.hasNext()){
             Node n = iterator.next();
-            if(t.getTarget().equals(n)){
+            if(dis.getTarget().equals(n)){
                 hasConnection = true;
                 break;
             }
@@ -133,7 +147,11 @@ public class District {
     public double getPosY() {
         return this.posY;
     }
-
+    /**
+     * Changing position of district
+     * @param x x cord of position
+     * @param y y cord of position
+     */
     public void setNewPos(double x, double y) {
         target.setAttribute("x", x);
         target.setAttribute("y", y);
@@ -144,7 +162,7 @@ public class District {
     public ArrayList<District> getNeigh() {
         return this.neigh;
     }
-
+    /**Updates position of target, after moving it by mouse */
     public void update() {
 
         double[] tmp = Toolkit.nodePosition(graph, target.getId());
@@ -153,7 +171,7 @@ public class District {
     }
     
     public ArrayList<Soldier> getInTargetSoldiers() {
-        return this.inTargetSoldiers;
+        return this.inDistrictSoldiers;
     }
     
     /**
@@ -161,8 +179,8 @@ public class District {
      * @param soldier
      */
     public void addSoldierToMe(Soldier soldier) {
-        if (!inTargetSoldiers.contains(soldier)) {
-            inTargetSoldiers.add(soldier);
+        if (!inDistrictSoldiers.contains(soldier)) {
+            inDistrictSoldiers.add(soldier);
         }
         // disconnetAllSoldiers();
         connectSoldiers();
@@ -174,9 +192,9 @@ public class District {
      * @param soldier soldier to remove
      */
     public void removeSoldierFromMe(Soldier soldier){
-        if (inTargetSoldiers.contains(soldier)) {
+        if (inDistrictSoldiers.contains(soldier)) {
             Edge tmpToDelete = null;
-            for (Edge edge : inTargetSoldiersEdges) {
+            for (Edge edge : inDistrictSoldiersEdges) {
                 if (edge.getNode0().equals(soldier.getNode()) || edge.getNode1().equals(soldier.getNode())) {
                     if (graph.getEdgeSet().contains(edge)) {
                         try {
@@ -189,9 +207,9 @@ public class District {
                 }
             }
             if (tmpToDelete != null) {
-                inTargetSoldiersEdges.remove(tmpToDelete);
+                inDistrictSoldiersEdges.remove(tmpToDelete);
             }
-            inTargetSoldiers.remove(soldier);
+            inDistrictSoldiers.remove(soldier);
         }
 
     }
@@ -200,16 +218,18 @@ public class District {
      * Connecting all soldiers, but not that with "R" flag!
      */
     public void connectSoldiers(){
-        for (Soldier soldier : inTargetSoldiers) {
-            for (Soldier soldier2 : inTargetSoldiers) {
+        for (Soldier soldier : inDistrictSoldiers) {
+            for (Soldier soldier2 : inDistrictSoldiers) {
                 try {
-                    if (!soldier.equals(soldier2) && !soldier.getNode().getAttribute("sick", String.class).equals("R") && 
-                                                     !soldier2.getNode().getAttribute("sick", String.class).equals("R")) {
-                            Edge e = graph.addEdge(soldier.getNode().getId() + "_" + soldier2.getNode().getId(), soldier.getNode(), soldier2.getNode(), false);
-                            e.addAttribute("ui.style", "z-index: 3;");
-                            if (!inTargetSoldiersEdges.contains(e)) {
-                                inTargetSoldiersEdges.add(e);
-                            }
+                    if(soldier.getStateOfIllnes().equals("I")&& !soldier2.getStateOfIllnes().equals("I")){
+                        if (!soldier.equals(soldier2) && !soldier.getNode().getAttribute("sick", String.class).equals("R") && 
+                                                        !soldier2.getNode().getAttribute("sick", String.class).equals("R")) {
+                                Edge e = graph.addEdge(soldier.getNode().getId() + "_" + soldier2.getNode().getId(), soldier.getNode(), soldier2.getNode(), false);
+                                e.addAttribute("ui.style", "z-index: 3;");
+                                if (!inDistrictSoldiersEdges.contains(e)) {
+                                    inDistrictSoldiersEdges.add(e);
+                                }
+                        }
                     }
                 } catch (Exception e) {
                     //DO nothing, there is already the edge

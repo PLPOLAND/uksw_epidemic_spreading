@@ -6,6 +6,9 @@ import java.io.PrintWriter;
 
 import uksw.epidemic_spread.Constants;
 
+/**
+ * Class to print gnuplot files.
+ */
 public class GnuplotPrint {
 
     PrintWriter writer;
@@ -50,14 +53,12 @@ public class GnuplotPrint {
     public void printLine(long time, int numberOfS, int numberOfI, int numberOfR) {
         writer.println(time +" " + numberOfS + " " + numberOfI + " " + numberOfR);
     }
+
     public void close() {
         writer.flush();
         writer.close();
     }
-    /**
-     * @warning call after close() method!
-     * @param iterations
-     */
+
     public void createPLT(){
         try {
             writer = new PrintWriter(new File("number_of_infected_plot.plt"));
@@ -74,7 +75,8 @@ public class GnuplotPrint {
                 +"set label 'dRecovered: "+Constants.RECOVER_TIME+"(millis)' at " +10 + ", " +(Constants.SIZE_OF_ARMY/2 +40) +   "\n"
                 +"set xlabel \"time in seconds\"\n"
                 +"set ylabel \"number\"\n"
-                +"plot '"+fileName+"' using ($1/1000):2 with lines lc 2 lw 2 title \"Susceptible\" , '"+fileName+"' using ($1/1000):3 with lines lc rgb 'red' lw 2 title \"Infected\" , '"+fileName+"' using ($1/1000):4 with lines lc rgb '#AAAAFF' lw 2 title \"Recovered\" \n");
+                +"plot '"+fileName+"' using ($1/1000):2 with lines lc 2 lw 2 title \"Susceptible\" , '"+fileName+"' using ($1/1000):3 with lines lc rgb 'red' lw 2 title \"Infected\" , '"+fileName+"' using ($1/1000):4 with lines lc rgb '#AAAAFF' lw 2 title \"Recovered\" \n "
+                +"pause -1 \"Hit return to close\"\n");
             writer.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

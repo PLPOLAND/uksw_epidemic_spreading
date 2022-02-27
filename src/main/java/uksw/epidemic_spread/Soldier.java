@@ -14,7 +14,7 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
 /**
- * @author Marek Pałdyna
+ * 
  * 
  * Class represents soldier
  * 
@@ -22,37 +22,50 @@ import org.graphstream.graph.implementations.SingleGraph;
 public class Soldier {
     private Node me;
     private SingleGraph graph;
-    private static int nextPersonID = 0;
+    private static int nextSoldierID = 0;//for having id of netx soldier
     private static final Random random = new Random(System.currentTimeMillis());
 
+    /**Position of soldier in graph */
     private double posX = 0;
+    /**Position of soldier in graph */
     private double posY = 0;
 
+    /**Speed of soldier */
     private double speed = 0;
 
+    /**Target district */
     private District target;
 
+    //Temporary variables
     private double tmpTarX = 0;
     private double tmpTarY = 0;
     private double tmpTardX = 0;
     private double tmpTardY = 0;
 
-
+    //RGB colors of node
     private int red = 0;
     private int green = 0;
     private int blue = 0;
 
+    /**if soldier should stay on target */
     private boolean shouldBeOnTarget = false;
-    private long timeToLeaveTargetField = System.currentTimeMillis();
+
+    /**For timming leave from target */
+    private long timeToLeaveTargetDistrict = System.currentTimeMillis();
+    /**For timming time of infection from target */
     private long timeStartInfection = 0;
+    /**For timming time of recovered */
     private long timeRecovered = 0;
 
-    private boolean preinfected = false;
+    /**Is  soldier preinfected*/
+    private boolean isPreinfected = false;
 
-
+    
     private ArrayList<Soldier> neighSoldiers = new ArrayList<>();
+    /**For containing time of contact with neighbour */
     private HashMap<Soldier,Long> neighSoldiersTime = new HashMap<>();
 
+    /**For calculating delay between "ticks" */
     long lastTickTime = 0;
 
     Soldier(SingleGraph graph, List<District> targets){
@@ -63,7 +76,7 @@ public class Soldier {
         if (speed<Constants.MIN_SPEED) {
             speed = Constants.MIN_SPEED;
         }
-        me = this.graph.addNode("S"+nextPersonID++);
+        me = this.graph.addNode("S"+nextSoldierID++);
         me.addAttribute("person", true);
         me.addAttribute("sick", "S");
         // me.addAttribute("ui.label", me.getId());
@@ -130,8 +143,8 @@ public class Soldier {
 
             this.neighSoldiers = target.getInTargetSoldiers();
 
-            if (timeToLeaveTargetField < now && !shouldBeOnTarget) {//start the counter
-                timeToLeaveTargetField = now + random.nextInt(Constants.MAX_STAY_TIME);
+            if (timeToLeaveTargetDistrict < now && !shouldBeOnTarget) {//start the counter
+                timeToLeaveTargetDistrict = now + random.nextInt(Constants.MAX_STAY_TIME);
                 if (stateOfIllnes.equals("S")) {//only if Susceptible
                     me.setAttribute("sick", "E");
                 }
@@ -140,7 +153,7 @@ public class Soldier {
                 target.addSoldierToMe(this);
                 shouldBeOnTarget = true;
             } 
-            else if (timeToLeaveTargetField>= now ) {
+            else if (timeToLeaveTargetDistrict>= now ) {
                 if ( Tools.calculateLength(posX, posY, tmpTarX + tmpTardX, tmpTarY + tmpTardY) < Constants.XY_APROX) {
                     //take new target point in target circle
                     int x =0 , y= 0;
@@ -185,6 +198,7 @@ public class Soldier {
         this.shouldBeOnTarget = false;
         moveToTarget();
     }
+    /**Calculates movement to target (Target position is from target field of object) & move soldier */
     private void moveToTarget() {
 
         double dx = target.getPosX() - posX;
@@ -200,7 +214,13 @@ public class Soldier {
 
 
     }
-
+    
+    /**
+     * Calculates movement to target (target position is given by argument) & move soldier
+     * 
+     * @param tarX X position of target 
+     * @param tarY Y position of target 
+     */
     private void moveToTarget(double tarX, double tarY) {
 
         double dx = tarX - posX;
@@ -216,7 +236,12 @@ public class Soldier {
 
 
     }
-
+    
+    /**
+     * Checks if the Soldier is in the target district
+     * 
+     * @return boolean - true if distance from the target is smaller than Constants.SIZE_OF_DISTRICT/2
+     */
     private boolean isOnTarget(){
         if(Tools.calculateLength(posX, posY, target.getPosX(), target.getPosY()) < Constants.SIZE_OF_DISTRICT/2 ){
             return true;
@@ -224,6 +249,7 @@ public class Soldier {
         return false;
     }
 
+    /**Changing position of Soldier */
     private void move(double x, double y){
         if (Tools.checkPosition((int)x, (int)y)) {
             posX = x;
@@ -263,33 +289,35 @@ public class Soldier {
             posY = y;
             me.setAttribute("x", x);
             me.setAttribute("y", y);
-            me.setAttribute("z", 10);
         }
         //else do Nothing
     }
 
+    /**
+     * Makes soldier Preinfected
+     */
     public void mekePreinfected() {
         
         timeStartInfection = System.currentTimeMillis();
-        preinfected = true;
+        isPreinfected = true;
         
         System.out.println(me.getId() + " made preinfected");
-        me.addAttribute("ui.style", "fill-color: rgb(0,0,0);");
+        me.addAttribute("ui.style", "stroke-color: rgb(255,100,100); stroke-mode:plain;");
     }
 
     /**
-     * Marking guy as I
+     * Marking soldier as I
      */
     private void makeInfected() {
-        me.addAttribute("ui.style", "fill-color: rgb(255,0,0);");
+        me.addAttribute("ui.style", "fill-color: rgb(255,0,0); stroke-mode:none;");
         // me.addAttribute("ui.style", "fill-color: rgb(255,"+ g/3+","+b/3+");"); //if we want red to be not only one color
         me.addAttribute("sick", "I");
         System.out.println(me.getId() + " made I");
-        preinfected = false;
+        isPreinfected = false;
         
     }
     /**
-     * Marking guy as R
+     * Marking soldier as R
      */
     public void makeRecovered() {
         me.addAttribute("ui.style", "fill-color: rgb(250,250,250);");
@@ -298,7 +326,7 @@ public class Soldier {
         timeRecovered = System.currentTimeMillis();
     }
     /**
-     * Marking guy as S
+     * Marking soldier as S
      */
     public void makeSusceptible() {
         me.addAttribute("ui.style", "fill-color: rgb(" + red + "," + green + "," + blue + ");");
@@ -306,17 +334,21 @@ public class Soldier {
         System.out.println(me.getId() + " made S");
     }
     /**
-     * Marking guy as E
+     * Marking soldier as E
      */
     public void makeExposed() {
         me.addAttribute("ui.style", "fill-color: rgb(" + red + "," + green + "," + blue + ");");
         me.addAttribute("sick", "E");
     }
 
+    /**
+     * Calculates everything what is related with sickness
+     * @param tickTime delay time from last calculate
+     */
     private void calculateSick(long tickTime) {
         String stateOfSick = me.getAttribute("sick");
         long now = System.currentTimeMillis();
-        if (this.preinfected && this.timeStartInfection + Constants.I_DELAY_TIME < now) {
+        if (this.isPreinfected && this.timeStartInfection + Constants.I_DELAY_TIME < now) {
             this.makeInfected();
         }
         else if(stateOfSick.equals("I") && this.timeStartInfection + Constants.I_DELAY_TIME+ Constants.INFECTIOUS_TIME < now){
@@ -345,7 +377,7 @@ public class Soldier {
                             tmpT = 0d;
                         double probability = (1/Math.sqrt(tmpT));
                         double rand = random.nextDouble();
-                        if (rand < probability && ((String)(soldier.getNode().getAttribute("sick"))).equals("E") && !soldier.preinfected) {
+                        if (rand < probability && ((String)(soldier.getNode().getAttribute("sick"))).equals("E") && !soldier.isPreinfected) {
                                 soldier.mekePreinfected();
                         }
                     }
@@ -357,7 +389,9 @@ public class Soldier {
         }
 
     }
-
+    /**
+     * Sets "contact" time to "0" for soldiers which left district
+     */
     private void removeOutSoldiersFromTime() {
         HashMap<Soldier, Long> tmp = (HashMap<Soldier, Long>) this.neighSoldiersTime.clone();
 
